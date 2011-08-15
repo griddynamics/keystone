@@ -27,7 +27,7 @@ This WSGI component
 import os
 import sys
 import json
-import ast
+from lxml import etree
 
 from webob.exc import Request, Response
 
@@ -58,56 +58,46 @@ class FrontEndFilter(object):
         request = Request(env)
         if request.path == "/extensions":
             if env['KEYSTONE_API_VERSION'] == '2.0':
-                
                 request = Request(env)
                 response = request.get_response(self.app)
                 if response.status_int == 200:
-                    if response.content_type == 'application/jsondd':
-                        #handle json
-                        #response.decode_content()
-                        #body = json.loads(response.body)
-                        #extensionsarray = body["extensions"]["values"]
-                        #print __file__
-                        #print os.path.pardir(__file__)
-                        
-                        #print os.path.join(os.path.pardir(__file__), \
-                        #                           "extension.json")
-                        #thisextension = open(os.path.join(
-                        #                            os.path.pardir(__file__),
-                        #                           "extension.json")).read()
-                        #thisextensionjson = json.loads(thisextension)
-                        #extensionarray.append(thisextensionjson)
-                        #newresp = Response(
-                        #    content_type='application/json',
-                        #    body=json.dumps(body))
-                        #return resp
-                        #return newresp(env, start_response)
-                        pass
-                    elif response.content_type == 'application/xmldd':
-                        response.decode_content()
-                        return resp(env, start_response)
-            
+                    if response.content_type == 'application/json':
+                        #load json for this extension from file
+                        thisextension = open(os.path.join(
+                                                    os.path.dirname(__file__),
+                                                   "extension.json")).read()
+                        thisextensionjson = json.loads(thisextension)
+
+                        #load json in response
+                        body = json.loads(response.body)
+                        extensionsarray = body["extensions"]["values"]
+
+                        #add this extension and return the response
+                        extensionsarray.append(thisextensionjson)
+                        newresp = Response(
+                            content_type='application/json',
+                            body=json.dumps(body))
+                        return newresp(env, start_response)
+                    elif response.content_type == 'application/xml':
+                        #load xml for this extension from file
+                        thisextensionxml = etree.parse(os.path.join(
+                                                    os.path.dirname(__file__),
+                                                   "extension.xml")).getroot()
+                        #load xml being returned in response
+                        body = etree.fromstring(response.body)
+
+                        #add this extension and return the response
+                        body.append(thisextensionxml)
+                        newresp = Response(
+                            content_type='application/xml',
+                            body=etree.tostring(body))
+                        return newresp(env, start_response)
+
                 # return the response
                 return response(env, start_response)
-                
-                
-                #response = self.app(env, self._sr_callback(start_response))
-                #print response
-                #print env
-                #return response
 
-        #default action, bypass    
+        #default action, bypass
         return self.app(env, start_response)
-
-    def _sr_callback(self, start_response):
-        print 'sr'
-        def callback(status, headers, exc_info=None):
-            # Do something to modify the response status or headers
-            print 'cb'
-        
-            # Call upstream start_response
-            start_response(status, headers, exc_info)
-        return callback
 
 
 def filter_factory(global_conf, **local_conf):
@@ -119,4 +109,3 @@ def filter_factory(global_conf, **local_conf):
         """Closure to return"""
         return FrontEndFilter(app, conf)
     return ext_filter
-
