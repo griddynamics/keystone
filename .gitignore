@@ -21,3 +21,4 @@ keystone.egg-info/
 run_tests.err.log
 .coverage
 .DS_Store
+.idea/
