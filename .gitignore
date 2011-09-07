@@ -21,3 +21,4 @@ run_tests.err.log
 .coverage
 .DS_Store
 test_migrations.db
+.idea/
