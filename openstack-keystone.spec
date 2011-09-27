@@ -5,8 +5,8 @@
 %define py_puresitedir  /usr/lib/python2.6/site-packages
 
 Name:           openstack-keystone
-Release:	0.20110823.2230%{?dist}
-Version:	1.0
+Release:	3
+Version:	2011.3
 Url:            http://www.openstack.org
 Summary:        Python bindings to the OS API
 License:        Apache 2.0
