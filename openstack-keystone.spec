@@ -68,7 +68,7 @@ fi
 
 %files
 %defattr(-,root,root,-)
-%{_sysconfdir}
+%config(noreplace) %{_sysconfdir}
 %doc README.md HACKING LICENSE examples doc
 %{py_puresitedir}/%{mod_name}*
 %{py_puresitedir}/tools
