@@ -2,7 +2,7 @@
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 
 %define mod_name keystone
-%define py_puresitedir  /usr/lib/python2.6/site-packages
+%define py_puresitedir  %{python_sitelib}
 
 Name:           openstack-keystone
 Release:	3
