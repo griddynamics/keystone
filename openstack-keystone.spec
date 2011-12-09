@@ -5,6 +5,7 @@
 %define py_puresitedir  %{python_sitelib}
 
 Name:           openstack-keystone
+Epoch:          1
 Release:	3
 Version:	2011.3
 Url:            http://www.openstack.org
