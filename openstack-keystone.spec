@@ -36,11 +36,11 @@ Documentation for %{name}.
 %prep
 %setup -q -n %{name}-%{version}
 sed -i 's|sqlite:///keystone|sqlite:////var/lib/keystone/keystone|' etc/keystone.conf
-sed -i 's|log_file = keystone.log|log_file = /var/log/keystone/keystone.log|' etc/keystone.conf
+sed -i "s|'tenant_name'|'tenantName'|" keystone/middleware/auth_token.py
 
 
 %build
-python setup.py build
+%__python setup.py build
 
 
 %install
@@ -53,8 +53,7 @@ mv %{buildroot}/usr/bin/keystone{,-combined}
 install -d -m 755 %{buildroot}%{_sysconfdir}/%{mod_name}
 install -m 644 etc/* %{buildroot}%{_sysconfdir}/%{mod_name}
 install -d -m 755 %{buildroot}%{_sysconfdir}/nova
-install -m 644 examples/paste/auth_*ini %{buildroot}%{_sysconfdir}/nova
-install -m 644 examples/paste/nova-api-paste.ini %{buildroot}%{_sysconfdir}/nova/api-paste.ini.keystone.example
+install -m 644 examples/paste/nova-api-paste.ini %{buildroot}%{_sysconfdir}/nova/api-paste.ini.keystone
 
 install -d -m 755 %{buildroot}%{_sharedstatedir}/keystone
 install -d -m 755 %{buildroot}%{_localstatedir}/log/%{mod_name}
@@ -76,10 +75,24 @@ useradd -r -g nobody -G nobody -d %{_sharedstatedir}/keystone -s /sbin/nologin \
 exit 0
 
 
+%post
+mv %{_sysconfdir}/nova/api-paste.ini{,.nokeystone}
+cp %{_sysconfdir}/nova/api-paste.ini{.keystone,}
+/sbin/chkconfig --add %{name}
+
+
 %preun
-if [ $1 = 0 ] ; then
-    /sbin/service %{name} stop
+if [ $1 -eq 0 ] ; then
+    /sbin/service %{name} stop >/dev/null 2>&1
     /sbin/chkconfig --del %{name}
+    rm %{_sysconfdir}/nova/api-paste.ini
+    mv %{_sysconfdir}/nova/api-paste.ini{.nokeystone,}
+fi
+
+
+%postun
+if [ $1 -eq 1 ] ; then
+    /sbin/service %{name} condrestart
 fi
 
 
