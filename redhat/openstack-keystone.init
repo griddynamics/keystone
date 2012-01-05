@@ -34,10 +34,10 @@
 prog="OpenStack Keystone"
 suffix="compute"
 flgfile=/etc/keystone/keystone.conf
-logfile=/var/log/keystone/keystone.log
+logdir=/var/log/keystone
 pidfile=/var/run/keystone/keystone.pid
 lckfile=/var/lock/subsys/openstack-keystone
-binfile=/usr/bin/keystone
+binfile=/usr/bin/keystone-combined
 
 start() {
 	if [ -f "$pidfile" ]; then
@@ -53,7 +53,7 @@ start() {
 	fi
 	echo -n "Starting $prog: "
 	cd /var/lib/keystone
-	/sbin/start-stop-daemon --start -b -c keystone:nobody --make-pidfile --pidfile $pidfile  --exec /usr/bin/keystone -- --config-file=$flgfile --log-file=$logfile
+	/sbin/start-stop-daemon --start -b -c keystone:nobody --make-pidfile --pidfile $pidfile  --exec $binfile -- --config-file=$flgfile --log-dir=$logdir
 	sleep 1
 	if [ -f "$pidfile" ]; then
 		checkpid `cat $pidfile`
