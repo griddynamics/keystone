@@ -39,7 +39,7 @@ Documentation for %{name}.
 %prep
 %setup -q -n %{name}-%{version}
 sed -i 's|sqlite:///keystone|sqlite:////var/lib/keystone/keystone|' etc/keystone.conf
-sed -i 's|log_file = keystone.log|log_file = /var/log/keystone/keystone.log|' etc/keystone.conf
+sed -i "s|'tenant_name'|'tenantName'|" keystone/middleware/auth_token.py
 
 
 %build
