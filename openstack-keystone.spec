@@ -35,7 +35,7 @@ Authentication service - proposed for OpenStack
 %package doc
 Summary:        Documentation for %{name}
 Group:          Documentation
-Requires:       %{name} = %{version}-%{release}
+Requires:       %{name} = %{epoch}:%{version}-%{release}
 
 
 %description doc
