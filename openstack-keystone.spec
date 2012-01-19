@@ -1,6 +1,7 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 
+%global with_doc 1
 %global prj keystone
 %define mod_name keystone
 %define py_puresitedir  %{python_sitelib}
@@ -17,7 +18,10 @@ Group:          Development/Languages/Python
 Source0:        %{name}-%{version}.tar.gz
 Source1:        %{name}.init
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
-BuildRequires:  python-devel python-setuptools python-sphinx >= 0.6.0 make
+BuildRequires:  python-devel python-setuptools
+%if 0%{?with_doc}
+BuildRequires:  python-sphinx >= 0.6.0 make
+%endif
 BuildArch:      noarch
 Requires:       python-eventlet python-lxml python-paste python-sqlalchemy python-routes python-httplib2 python-paste-deploy start-stop-daemon python-webob python-setuptools python-passlib
 
@@ -25,6 +29,8 @@ Requires:       python-eventlet python-lxml python-paste python-sqlalchemy pytho
 %description
 Authentication service - proposed for OpenStack
 
+
+%if 0%{?with_doc}
 
 %package doc
 Summary:        Documentation for %{name}
@@ -35,6 +41,7 @@ Requires:       %{name} = %{version}-%{release}
 %description doc
 Documentation for %{name}.
 
+%endif
 
 %prep
 %setup -q -n %{name}-%{version}
@@ -49,15 +56,15 @@ python setup.py build
 %install
 %__rm -rf %{buildroot}
 
+%if 0%{?with_doc}
 %__make -C doc/ html PYTHONPATH=%{_builddir}/%{name}-%{version}
+%endif
 python setup.py install --prefix=%{_prefix} --root=%{buildroot}
 mv %{buildroot}/usr/bin/keystone{,-combined}
 
 install -d -m 755 %{buildroot}%{_sysconfdir}/%{prj}
 install -m 644 etc/* %{buildroot}%{_sysconfdir}/%{prj}
-install -d -m 755 %{buildroot}%{_sysconfdir}/nova
-install -m 644 examples/paste/auth_*ini %{buildroot}%{_sysconfdir}/nova
-install -m 644 examples/paste/nova-api-paste.ini %{buildroot}%{_sysconfdir}/nova/api-paste.ini.keystone.example
+install -m 644 examples/paste/nova-api-paste.ini %{buildroot}%{_sysconfdir}/%{prj}
 
 install -d -m 755 %{buildroot}%{_sharedstatedir}/keystone
 install -d -m 755 %{buildroot}%{_localstatedir}/log/%{prj}
@@ -94,13 +101,13 @@ fi
 %dir %attr(0755, keystone, nobody) %{_sharedstatedir}/%{prj}
 %dir %attr(0755, keystone, nobody) %{_localstatedir}/log/%{prj}
 %dir %attr(0755, keystone, nobody) %{_localstatedir}/run/%{prj}
-%config(noreplace) %{_sysconfdir}/nova/*
 %config(noreplace) %{_sysconfdir}/keystone
 %{_sysconfdir}/rc.d/init.d/*
 
-
+%if 0%{?with_doc}
 %files doc
 %defattr(-,root,root,-)
 %doc examples doc
+%endif
 
 %changelog
