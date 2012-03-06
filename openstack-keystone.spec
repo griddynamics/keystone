@@ -14,7 +14,7 @@ Url:            http://www.openstack.org
 Summary:        Python bindings to the OS API
 License:        Apache 2.0
 Vendor:         Grid Dynamics Consulting Services, Inc.
-Group:          Development/Languages/Python
+Group:          Applications/System
 Source0:        %{name}-%{version}.tar.gz
 Source1:        %{name}.init
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -23,8 +23,8 @@ BuildRequires:  python-devel python-setuptools
 BuildRequires:  python-sphinx >= 0.6.0 make
 %endif
 BuildArch:      noarch
-Requires:       python-eventlet python-lxml python-paste python-sqlalchemy python-routes python-httplib2 python-paste-deploy start-stop-daemon python-webob python-setuptools python-passlib
-
+Requires:       start-stop-daemon
+Requires:       python-keystone = %{epoch}:%{version}-%{release}
 
 %description
 Authentication service - proposed for OpenStack
@@ -42,6 +42,26 @@ Requires:       %{name} = %{epoch}:%{version}-%{release}
 Documentation for %{name}.
 
 %endif
+
+%package -n     python-keystone
+Summary:        Keystone Python libraries
+Group:          Development/Languages/Python
+
+Requires:       python-eventlet 
+Requires:       python-lxml 
+Requires:       python-paste 
+Requires:       python-sqlalchemy 
+Requires:       python-routes 
+Requires:       python-httplib2 
+Requires:       python-paste-deploy 
+Requires:       start-stop-daemon 
+Requires:       python-webob 
+Requires:       python-setuptools 
+Requires:       python-passlib 
+Requires:       python-keystone
+
+%description -n  python-keystone
+This package contains the %{name} Python library.
 
 %prep
 %setup -q -n %{name}-%{version}
@@ -96,12 +116,11 @@ fi
 %files
 %defattr(-,root,root,-)
 %doc README.md HACKING LICENSE
-%{py_puresitedir}/%{mod_name}*
 %{_usr}/bin/*
+%config(noreplace) %{_sysconfdir}/keystone
 %dir %attr(0755, keystone, nobody) %{_sharedstatedir}/%{prj}
 %dir %attr(0755, keystone, nobody) %{_localstatedir}/log/%{prj}
 %dir %attr(0755, keystone, nobody) %{_localstatedir}/run/%{prj}
-%config(noreplace) %{_sysconfdir}/keystone
 %{_sysconfdir}/rc.d/init.d/*
 
 %if 0%{?with_doc}
@@ -110,4 +129,12 @@ fi
 %doc examples doc
 %endif
 
+%files -n python-keystone
+%defattr(-,root,root,-)
+%doc LICENSE
+%{py_puresitedir}/%{mod_name}*
+
+
 %changelog
+* Thu Mar  6 2012 Marco Sinhoreli <marco.sinhoreli@corp.globo.com> - 2011.3
+- Separated keystone libraries of the others
