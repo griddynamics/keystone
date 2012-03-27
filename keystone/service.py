@@ -260,6 +260,7 @@ class TokenController(wsgi.Application):
 
             # more compat
             tenant_id = auth.get('tenantId', None)
+
             if tenant_name:
                 tenant_ref = self.identity_api.get_tenant_by_name(
                         context=context, tenant_name=tenant_name)

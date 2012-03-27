@@ -357,6 +357,7 @@ class UserController(wsgi.Application):
         super(UserController, self).__init__()
 
     def get_user(self, context, user_id):
+
         self.assert_admin(context)
         user_ref = self.identity_api.get_user(context, user_id)
         if not user_ref:

@@ -88,6 +88,7 @@ class Identity(identity.Driver):
         except Exception:
             raise AssertionError('Invalid user / password')
 
+
         tenants = self.get_tenants_for_user(user_id)
         if tenant_id and tenant_id not in tenants:
             raise AssertionError('Invalid tenant')
@@ -95,8 +96,8 @@ class Identity(identity.Driver):
         tenant_ref = self.get_tenant(tenant_id)
         metadata_ref = {}
         # TODO(termie): this should probably be made into a get roles call
-        #if tenant_ref:
-        #    metadata_ref =  self.get_metadata(user_id, tenant_id)
+        if tenant_ref:
+            metadata_ref =  self.get_metadata(user_id, tenant_id)
         #else:
         #    metadata_ref = {}
         return  (_filter_user(user_ref), tenant_ref, metadata_ref)
@@ -129,8 +130,8 @@ class Identity(identity.Driver):
         if not self.get_tenant(tenant_id) or not self.get_user(user_id):
             return {}
 
-        metadata_ref = self.get_roles_for_user_and_tenant(user_id, tenant_id)
-        return metadata_ref or {}
+        roles = self.get_roles_for_user_and_tenant(user_id, tenant_id)
+        return {"roles" : roles} or {}
 
     def get_role(self, role_id):
         return self.role.get(role_id)
@@ -246,9 +247,9 @@ class UserApi(common_ldap.BaseLdap, ApiShimMixin):
     DEFAULT_ID_ATTRIBUTE = 'cn'
     DEFAULT_OBJECTCLASS = 'inetOrgPerson'
     options_name = 'user'
-    attribute_mapping = {'password': 'userPassword',
-                         #'email': 'mail',
-                         'name': 'sn'}
+    attribute_mapping = {#'password': 'userPassword',
+                         'email': 'mail',
+                         'name': 'name'}
 
     # NOTE(ayoung): The RFC based schemas don't have a way to indicate
     # 'enabled' the closest is the nsAccount lock, which is on defined to
@@ -370,7 +371,7 @@ class TenantApi(common_ldap.BaseLdap, ApiShimMixin):
     DEFAULT_ID_ATTRIBUTE = 'cn'
     DEFAULT_MEMBER_ATTRIBUTE = 'member'
     options_name = 'tenant'
-    attribute_mapping = {'description': 'desc', 'name': 'ou'}
+    attribute_mapping = {'Description': 'desc', 'name': 'sAMAccountName'}
     model = models.Tenant
 
     def __init__(self, conf):
@@ -601,10 +602,10 @@ class RoleApi(common_ldap.BaseLdap, ApiShimMixin):
     def get_role_assignments(self, tenant_id):
         conn = self.get_connection()
         query = '(objectClass=%s)' % self.object_class
-        tenant_dn = self.tenant_api._id_to_dn(tenant_id)
+        role_dn = self.role_api._id_to_dn(tenant_id)
 
         try:
-            roles = conn.search_s(tenant_dn, ldap.SCOPE_ONELEVEL, query)
+            roles = conn.search_s(role_dn, ldap.SCOPE_ONELEVEL, query)
         except ldap.NO_SUCH_OBJECT:
             return []
 

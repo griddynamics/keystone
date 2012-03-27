@@ -176,8 +176,10 @@ class BaseLdap(object):
             query = '(&%s%s)' % (filter, query)
 
         try:
-            res = conn.search_s(self._id_to_dn(id), ldap.SCOPE_BASE, query)
-        except ldap.NO_SUCH_OBJECT:
+            id = self._id_to_dn(id)
+            res = conn.search_s(id, ldap.SCOPE_BASE, query)
+        except ldap.NO_SUCH_OBJECT, e:
+            LOG.debug(e)
             return None
 
         try:
@@ -191,7 +193,8 @@ class BaseLdap(object):
         if filter is not None:
             query = '(&%s%s)' % (filter, query)
         try:
-            return conn.search_s(self.tree_dn, ldap.SCOPE_ONELEVEL, query)
+            result = conn.search_s(self.tree_dn, ldap.SCOPE_SUBTREE, query)
+            return result
         except ldap.NO_SUCH_OBJECT:
             return []
 
@@ -283,6 +286,10 @@ class LdapWrapper(object):
     def __init__(self, url):
         LOG.debug("LDAP init: url=%s", url)
         self.conn = ldap.initialize(url)
+        self.conn.protocol_version = 3
+        self.conn.set_option(ldap.OPT_REFERRALS, 0)
+        self.conn.set_option( ldap.OPT_X_TLS_DEMAND, True )
+        self.conn.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,ldap.OPT_X_TLS_NEVER)
 
     def simple_bind_s(self, user, password):
         LOG.debug("LDAP bind: dn=%s", user)
@@ -308,7 +315,7 @@ class LdapWrapper(object):
         res = self.conn.search_s(dn, scope, query)
 
         o = []
-        for dn, attrs in res:
+        for dn, attrs in filter(lambda x: x[0] is not None, res) :
             o.append((dn, dict((kind, [ldap2py(x) for x in values])
                                for kind, values in attrs.iteritems())))
 
