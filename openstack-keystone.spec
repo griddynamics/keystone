@@ -17,6 +17,7 @@ Vendor:         Grid Dynamics Consulting Services, Inc.
 Group:          Applications/System
 Source0:        %{name}-%{version}.tar.gz
 Source1:        %{name}.init
+Source2:        %{name}.logrotate
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildRequires:  python-devel python-setuptools
 %if 0%{?with_doc}
@@ -86,6 +87,9 @@ install -d -m 755 %{buildroot}%{_sysconfdir}/%{prj}
 install -m 644 etc/* %{buildroot}%{_sysconfdir}/%{prj}
 install -m 644 examples/paste/nova-api-paste.ini %{buildroot}%{_sysconfdir}/%{prj}
 
+# Install logrotate
+install -p -D -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
+
 install -d -m 755 %{buildroot}%{_sharedstatedir}/keystone
 install -d -m 755 %{buildroot}%{_localstatedir}/log/%{prj}
 install -d -m 755 %{buildroot}%{_localstatedir}/run/%{prj}
@@ -118,6 +122,7 @@ fi
 %doc README.md HACKING LICENSE
 %{_usr}/bin/*
 %config(noreplace) %{_sysconfdir}/keystone
+%config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
 %dir %attr(0755, keystone, nobody) %{_sharedstatedir}/%{prj}
 %dir %attr(0755, keystone, nobody) %{_localstatedir}/log/%{prj}
 %dir %attr(0755, keystone, nobody) %{_localstatedir}/run/%{prj}
@@ -136,5 +141,7 @@ fi
 
 
 %changelog
+* Tue May 29 2012 Maksim Malchuk <mmalchuk@griddynamics.com> - 2011.3
+- Added logrotate script
 * Thu Mar  6 2012 Marco Sinhoreli <marco.sinhoreli@corp.globo.com> - 2011.3
 - Separated keystone libraries of the others

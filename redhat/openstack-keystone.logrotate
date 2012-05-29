@@ -1,0 +1,34 @@
+compress
+
+/var/log/keystone/admin.log {
+    daily
+    rotate 30
+    missingok
+    notifempty
+    postrotate
+        service keystone restart
+    endscript
+    create 0644 keystone nobody
+}
+
+/var/log/keystone/keystone-legacy-auth.log {
+    daily
+    rotate 30
+    missingok
+    notifempty
+    postrotate
+        service keystone restart
+    endscript
+    create 0644 keystone nobody
+}
+
+/var/log/keystone/keystone.log {
+    daily
+    rotate 30
+    missingok
+    notifempty
+    postrotate
+        service keystone restart
+    endscript
+    create 0644 keystone nobody
+}
